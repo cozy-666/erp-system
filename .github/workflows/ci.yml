@@ -1,0 +1,49 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Docker環境のテスト
+  docker-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Start Docker services
+      run: |
+        docker-compose up -d mysql phpmyadmin
+        
+    - name: Wait for MySQL
+      run: |
+        timeout 60s bash -c 'until docker-compose exec -T mysql mysql -uroot -ppassword -e "SELECT 1"; do sleep 2; done'
+    
+    - name: Verify MySQL connection
+      run: |
+        docker-compose exec -T mysql mysql -uroot -ppassword -e "SHOW DATABASES;"
+        docker-compose exec -T mysql mysql -uroot -ppassword -e "SELECT * FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='erp_system';"
+    
+    - name: Stop Docker services
+      run: docker-compose down
+
+  # コードチェック（将来のLaravel用）
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check file structure
+      run: |
+        echo "=== Project Structure ==="
+        find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | head -20
+        
+    - name: Validate docker-compose.yml
+      run: |
+        docker-compose config
