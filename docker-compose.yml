@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  # Laravel Backend
+  backend:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    ports:
+      - "8000:80"
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=erp_system
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+
   # MySQL Database
   mysql:
     image: mysql:8.0
@@ -28,20 +47,6 @@ services:
       PMA_PASSWORD: password
     depends_on:
       - mysql
-
-  # Laravel Backend (後で追加)
-  # backend:
-  #   build:
-  #     context: ./docker/php
-  #     dockerfile: Dockerfile
-  #   container_name: erp-backend
-  #   working_dir: /var/www
-  #   volumes:
-  #     - ./backend:/var/www
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - mysql
 
 volumes:
   mysql_data:
