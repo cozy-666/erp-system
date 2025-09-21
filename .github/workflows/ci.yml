@@ -17,19 +17,19 @@ jobs:
     
     - name: Start Docker services
       run: |
-        docker-compose up -d mysql phpmyadmin
+        docker compose up -d mysql phpmyadmin
         
     - name: Wait for MySQL
       run: |
-        timeout 60s bash -c 'until docker-compose exec -T mysql mysql -uroot -ppassword -e "SELECT 1"; do sleep 2; done'
+        timeout 60s bash -c 'until docker compose exec mysql mysql -uroot -ppassword -e "SELECT 1" 2>/dev/null; do sleep 2; done'
     
     - name: Verify MySQL connection
       run: |
-        docker-compose exec -T mysql mysql -uroot -ppassword -e "SHOW DATABASES;"
-        docker-compose exec -T mysql mysql -uroot -ppassword -e "SELECT * FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='erp_system';"
+        docker compose exec mysql mysql -uroot -ppassword -e "SHOW DATABASES;"
+        docker compose exec mysql mysql -uroot -ppassword -e "SELECT * FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='erp_system';"
     
     - name: Stop Docker services
-      run: docker-compose down
+      run: docker compose down
 
   # コードチェック（将来のLaravel用）
   code-quality:
@@ -46,4 +46,4 @@ jobs:
         
     - name: Validate docker-compose.yml
       run: |
-        docker-compose config
+        docker compose config
